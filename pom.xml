@@ -54,5 +54,11 @@
 
         </plugins>
     </build>
+    <distributionManagement>
+    <repository>
+      <id>Simplecustomerapp</id>
+      <url>http://35.175.132.66:8081/repository/Simplecustomerapp/</url>
+    </repository>
+  </distributionManagement>
 
 </project>
