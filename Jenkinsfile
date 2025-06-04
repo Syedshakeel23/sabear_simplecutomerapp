@@ -1,35 +1,30 @@
-// Jenkinsfile for sabear_simplecutomerapp CI/CD Pipeline
-
 pipeline {
-    agent any // Or specify a specific agent label if you have dedicated build agents
+    agent any
 
     environment {
         // --- SonarQube Configuration ---
-        SONAR_SCANNER_HOME = tool 'SonarQube' // Name of the SonarQube Scanner tool configured in Jenkins
-        SONAR_QUBE_URL = "http://54.157.171.33:9002/" // Replace with your SonarQube URL
-        SONAR_QUBE_CREDENTIALS_ID = 'sonarqube1' // ID of the secret text credential in Jenkins
+        SONAR_SCANNER_HOME = tool 'SonarQube'
+        SONAR_QUBE_URL = "http://54.157.171.33:9002/"
+        SONAR_QUBE_CREDENTIALS_ID = 'sonarqube1'
 
         // --- Nexus Configuration ---
-        NEXUS_REPOSITORY_ID = 'Simplecustomerapp' // Or 'your-nexus-snapshots' depending on your artifact type
-        NEXUS_URL = 'http://35.175.132.66:8081/repository/Simplecustomerapp/' // Replace with your Nexus URL
-        NEXUS_CREDENTIALS_ID = 'nexus' // ID of the username/password credential in Jenkins
+        NEXUS_REPOSITORY_ID = 'Simplecustomerapp'
+        NEXUS_URL = 'http://35.175.132.66:8081/repository/Simplecustomerapp/'
+        NEXUS_CREDENTIALS_ID = 'nexus'
 
         // --- Tomcat Deployment Configuration ---
-        TOMCAT_URL = 'http://35.153.52.140:8082/manager/text' // <--- CORRECTED: Added /text endpoint
-        TOMCAT_CREDENTIALS_ID = 'TOM' // ID of the username/password credential for Tomcat manager
-        TOMCAT_APP_CONTEXT = 'simplecustomerapp' // Context path for your application on Tomcat
+        TOMCAT_URL = 'http://35.153.52.140:8082/manager/text'
+        TOMCAT_CREDENTIALS_ID = 'TOM'
+        TOMCAT_APP_CONTEXT = 'simplecustomerapp'
 
-        // --- Slack Notification Configuration ---
-        SLACK_CHANNEL = '#devops' // Replace with your Slack channel
-        // <--- REMOVED: SLACK_WEBHOOK_URL should NOT be here directly for security reasons.
-        // It should be stored as a Secret text credential in Jenkins.
-        SLACK_WEBHOOK_CREDENTIAL_ID = 'slack-webhook-secret' // <--- NEW: Use the ID of your Secret text credential in Jenkins
+        // --- Slack Configuration ---
+        SLACK_CHANNEL = '#devops'
+        SLACK_WEBHOOK_CREDENTIAL_ID = 'slack-webhook-secret'
     }
 
     tools {
-        // These refer to the names configured in Manage Jenkins -> Global Tool Configuration
-        jdk 'Java 17' // e.g., 'Java 11' - Ensure this exact name is configured globally
-        maven 'maven_3.9.9' // e.g., 'Maven 3.8.6' - Ensure this exact name is configured globally
+        jdk 'Java 17'
+        maven 'maven_3.9.9'
     }
 
     stages {
@@ -37,67 +32,56 @@ pipeline {
             steps {
                 echo 'Cloning repository...'
                 git branch: 'master', url: 'https://github.com/Syedshakeel23/sabear_simplecutomerapp.git'
-                // If your repository is private, add credentialsId: 'your-git-credentials-id'
             }
         }
 
-   stage('SonarQube Integration') {
-    steps {
-        echo 'Performing SonarQube analysis and Quality Gate check...'
-        withSonarQubeEnv(credentialsId: "${env.SONAR_QUBE_CREDENTIALS_ID}", installationName: 'SonarQube') {
-            // Execute SonarQube analysis
-            sh "${tool 'maven_3.9.9'}/bin/mvn clean install sonar:sonar -Dsonar.projectKey=sabear_simplecutomerapp "
-
-            // Add a short delay
-            script {
-                echo 'Waiting 5 seconds for SonarQube analysis context to update...'
-                sleep 5
-            }
-
-            // Check Quality Gate immediately after analysis
-            script {
-                def qg = waitForQualityGate()
-                echo "SonarQube Quality Gate Status: ${qg.status}"
-                if (qg.status != 'OK') {
-                    error "Pipeline aborted due to Quality Gate failure: ${qg.status}"
+        stage('SonarQube Analysis') {
+            steps {
+                echo 'Running SonarQube analysis...'
+                withSonarQubeEnv(credentialsId: "${env.SONAR_QUBE_CREDENTIALS_ID}", installationName: 'SonarQube') {
+                    sh "${tool 'maven_3.9.9'}/bin/mvn clean install sonar:sonar -Dsonar.projectKey=sabear_simplecutomerapp"
                 }
             }
         }
-    }
-}
-        stage('Maven Compilation') {
+
+        stage('Quality Gate Check') {
+            steps {
+                echo 'Waiting for SonarQube Quality Gate result...'
+                timeout(time: 2, unit: 'MINUTES') {
+                    waitForQualityGate abortPipeline: true
+                }
+            }
+        }
+
+        stage('Maven Package') {
             steps {
                 echo 'Compiling and packaging the application...'
                 sh "${tool 'maven_3.9.9'}/bin/mvn clean package -DskipTests"
             }
         }
 
-        stage('Nexus Artifactory') {
+        stage('Deploy to Nexus') {
             steps {
                 echo 'Deploying artifact to Nexus...'
-                withCredentials([usernamePassword(credentialsId: "${env.NEXUS_CREDENTIALS_ID}", passwordVariable: 'NEXUS_PASSWORD', usernameVariable: 'NEXUS_USERNAME')]) {
+                withCredentials([usernamePassword(credentialsId: "${env.NEXUS_CREDENTIALS_ID}", usernameVariable: 'NEXUS_USERNAME', passwordVariable: 'NEXUS_PASSWORD')]) {
                     sh "${tool 'maven_3.9.9'}/bin/mvn deploy -DaltDeploymentRepository=${env.NEXUS_REPOSITORY_ID}::default::${env.NEXUS_URL} -Dmaven.repo.local=.repository -DskipTests"
                 }
             }
         }
 
-        stage('Deploy On Tomcat') {
+        stage('Deploy to Tomcat') {
             steps {
-                echo 'Deploying to Tomcat...'
-                // Assuming the war file is generated in target/
+                echo 'Deploying WAR to Tomcat...'
                 script {
-                    def warFile = findFiles(glob: 'target/*.war')[0]
-                    if (warFile) {
-                        deploy adapters: [
-                            [
-                                credentialsId: "${env.TOMCAT_CREDENTIALS_ID}",
-                                contextPath: "${env.TOMCAT_APP_CONTEXT}",
-                                war: warFile.path
-                            ]
-                        ], publishers: [[url: "${env.TOMCAT_URL}"]]
-                    } else {
+                    def warFiles = findFiles(glob: 'target/*.war')
+                    if (warFiles.length == 0) {
                         error 'WAR file not found in target/ directory!'
                     }
+                    deploy adapters: [[
+                        credentialsId: "${env.TOMCAT_CREDENTIALS_ID}",
+                        contextPath: "${env.TOMCAT_APP_CONTEXT}",
+                        war: warFiles[0].path
+                    ]], publishers: [[url: "${env.TOMCAT_URL}"]]
                 }
             }
         }
@@ -106,26 +90,25 @@ pipeline {
     post {
         always {
             echo 'Pipeline finished.'
-            // Send Slack notification on pipeline completion (success or failure)
             slackSend(
                 channel: "${env.SLACK_CHANNEL}",
-                message: "Project: ${env.JOB_NAME}\nBuild Number: ${env.BUILD_NUMBER}\nStatus: ${currentBuild.result}\nURL: ${env.BUILD_URL}",
+                message: "Project: ${env.JOB_NAME}\nBuild Number: ${env.BUILD_NUMBER}\nStatus: ${currentBuild.result ?: 'SUCCESS'}\nURL: ${env.BUILD_URL}"
             )
         }
         success {
             echo 'Pipeline succeeded!'
             slackSend(
                 channel: "${env.SLACK_CHANNEL}",
-                message: "SUCCESS: Project: ${env.JOB_NAME}, Build: ${env.BUILD_NUMBER}, URL: ${env.BUILD_URL}",
-                color: 'good',
+                message: "SUCCESS: ${env.JOB_NAME} Build: ${env.BUILD_NUMBER}\nURL: ${env.BUILD_URL}",
+                color: 'good'
             )
         }
         failure {
             echo 'Pipeline failed!'
             slackSend(
                 channel: "${env.SLACK_CHANNEL}",
-                message: "FAILURE: Project: ${env.JOB_NAME}, Build: ${env.BUILD_NUMBER}, URL: ${env.BUILD_URL}",
-                color: 'danger',
+                message: "FAILURE: ${env.JOB_NAME} Build: ${env.BUILD_NUMBER}\nURL: ${env.BUILD_URL}",
+                color: 'danger'
             )
         }
     }
