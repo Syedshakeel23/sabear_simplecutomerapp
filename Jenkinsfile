@@ -27,9 +27,10 @@ node {
     stage('SonarQube Analysis') {
         echo 'Running SonarQube analysis...'
         withSonarQubeEnv(credentialsId: "${SONAR_QUBE_CREDENTIALS_ID}", installationName: 'SonarQube') {
-            sh "${mvnHome}/bin/mvn clean install sonar:sonar\
-            -Dsonar.projectKey=sabear_simplecutomerapp"\
-            -Dsonar.exclusions=**/*.html,**/*.jsp
+            withSonarQubeEnv('SonarQube') {
+                sh "${tool 'maven_3.9.9'}/bin/mvn clean install sonar:sonar -Dsonar.projectKey=sabear_simplecutomerapp -Dsonar.exclusions='**/*.html,**/*.jsp'"
+}
+
         }
     }
 
