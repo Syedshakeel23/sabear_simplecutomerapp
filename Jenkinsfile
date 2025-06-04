@@ -41,10 +41,10 @@ pipeline {
             }
         }
 
-        stage('SonarQube Integration') {
-    steps {
-        echo 'Performing SonarQube analysis and Quality Gate check...'
-        withSonarQubeEnv(credentialsId: "${env.SONAR_QUBE_CREDENTIALS_ID}", installationName: 'SonarQube') {
+    stage('SonarQube Integration') {
+        steps {
+            echo 'Performing SonarQube analysis and Quality Gate check...'
+            withSonarQubeEnv(credentialsId: "${env.SONAR_QUBE_CREDENTIALS_ID}", installationName: 'SonarQube') {
             // Execute SonarQube analysis
             sh "${tool 'Maven'}/bin/mvn clean install sonar:sonar " +
                "-Dsonar.projectKey=sabear_simplecutomerapp " +
