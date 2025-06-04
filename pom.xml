@@ -11,10 +11,13 @@
    <name>SimpleCustomerApp</name>
    <url>http://maven.apache.org</url>
 
-   <properties>
-       <maven.compiler.source>1.8</maven.compiler.source>
-       <maven.compiler.target>1.8</maven.compiler.target>
-   </properties>
+  <project>
+  <properties>
+    <maven.compiler.source>17</maven.compiler.source>
+    <maven.compiler.target>17</maven.compiler.target>
+    <sonar.coverage.jacoco.xmlReportPaths>${project.basedir}/target/site/jacoco/jacoco.xml</sonar.coverage.jacoco.xmlReportPaths>
+  </properties>
+</project>
 
    <build>
       <sourceDirectory>src/main/java</sourceDirectory>
