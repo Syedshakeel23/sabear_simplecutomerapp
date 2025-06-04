@@ -72,14 +72,12 @@ pipeline {
         }
 
         stage('Deploy to Nexus') {
-            steps {
-                echo 'Deploying artifact to Nexus...'
-                withCredentials([usernamePassword(credentialsId: "${env.NEXUS_CREDENTIALS_ID}", passwordVariable: 'NEXUS_PASSWORD', usernameVariable: 'NEXUS_USERNAME')]) {
-                    sh "${tool 'maven_3.9.9'}/bin/mvn deploy -DaltDeploymentRepository=${env.NEXUS_REPOSITORY_ID}::default::${env.NEXUS_URL} -Dmaven.repo.local=.repository -DskipTests"
-                }
-            }
-        }
-
+          steps {
+            configFileProvider([configFile(fileId: 'Simplecustomerapp-settings', variable: 'MAVEN_SETTINGS')]) {
+            sh "${tool 'maven_3.9.9'}/bin/mvn deploy -s $MAVEN_SETTINGS -Dmaven.repo.local=.repository -DskipTests"
+    }
+  }
+}
         stage('Deploy to Tomcat') {
             steps {
                 echo 'Deploying WAR to Tomcat...'
