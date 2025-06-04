@@ -29,7 +29,7 @@ pipeline {
     tools {
         // These refer to the names configured in Manage Jenkins -> Global Tool Configuration
         jdk 'Java 17' // e.g., 'Java 11' - Ensure this exact name is configured globally
-        maven 'MVN_HOME' // e.g., 'Maven 3.8.6' - Ensure this exact name is configured globally
+        maven 'maven' // e.g., 'Maven 3.8.6' - Ensure this exact name is configured globally
     }
 
     stages {
@@ -65,7 +65,7 @@ pipeline {
         stage('Maven Compilation') {
             steps {
                 echo 'Compiling and packaging the application...'
-                sh "${tool 'MVN_HOME'}/bin/mvn clean package -DskipTests"
+                sh "${tool 'maven'}/bin/mvn clean package -DskipTests"
             }
         }
 
