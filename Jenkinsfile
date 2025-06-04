@@ -49,9 +49,9 @@ pipeline {
             sh "${tool 'maven_3.9.9'}/bin/mvn clean install sonar:sonar -Dsonar.projectKey=sabear_simplecutomerapp " 
             // Check Quality Gate immediately after analysis
             script { // <--- THIS 'script' BLOCK IS NECESSARY FOR THE GROOVY CODE INSIDE IT
-                def qualityGateStatus = waitForQualityGate() // Call directly
-                    if (qualityGateStatus.status != 'OK') {
-                        error "SonarQube Quality Gate failed: ${qualityGateStatus.status}"
+                def qualityGateStatus = waitForQualityGate(installationName: 'SonarQube')
+                if (qualityGateStatus.status != 'OK') {
+                    error "SonarQube Quality Gate failed: ${qualityGateStatus.status}"
                 }
             }
         }
