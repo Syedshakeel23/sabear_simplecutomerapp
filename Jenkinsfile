@@ -41,15 +41,23 @@ pipeline {
             }
         }
 
-    stage('SonarQube Integration') {
-        steps {
-            echo 'Performing SonarQube analysis and Quality Gate check...'
-            withSonarQubeEnv(credentialsId: "${env.SONAR_QUBE_CREDENTIALS_ID}", installationName: 'SonarQube') {
+   stage('SonarQube Integration') {
+    steps {
+        echo 'Performing SonarQube analysis and Quality Gate check...'
+        withSonarQubeEnv(credentialsId: "${env.SONAR_QUBE_CREDENTIALS_ID}", installationName: 'SonarQube') {
             // Execute SonarQube analysis
-            sh "${tool 'maven_3.9.9'}/bin/mvn clean install sonar:sonar -Dsonar.projectKey=sabear_simplecutomerapp " 
+            sh "${tool 'maven_3.9.9'}/bin/mvn clean install sonar:sonar -Dsonar.projectKey=sabear_simplecutomerapp "
+
+            // Add a short delay
+            script {
+                echo 'Waiting 5 seconds for SonarQube analysis context to update...'
+                sleep 5
+            }
+
             // Check Quality Gate immediately after analysis
-            script { // <--- THIS 'script' BLOCK IS NECESSARY FOR THE GROOVY CODE INSIDE IT
-                def qualityGateStatus = waitForQualityGate(installationName: 'SonarQube')
+            script {
+                // Call waitForQualityGate without the installationName parameter
+                def qualityGateStatus = waitForQualityGate()
                 if (qualityGateStatus.status != 'OK') {
                     error "SonarQube Quality Gate failed: ${qualityGateStatus.status}"
                 }
@@ -57,7 +65,6 @@ pipeline {
         }
     }
 }
-
         stage('Maven Compilation') {
             steps {
                 echo 'Compiling and packaging the application...'
