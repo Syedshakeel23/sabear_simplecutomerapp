@@ -28,7 +28,6 @@ pipeline {
     }
 
     stages {
-
         stage('Git Clone') {
             steps {
                 echo 'Cloning repository...'
@@ -72,34 +71,36 @@ pipeline {
         }
 
         stage('Deploy to Nexus') {
-          steps {
-            configFileProvider([configFile(fileId: 'Simplecustomerapp-settings', variable: 'MAVEN_SETTINGS')]) {
-            sh "${tool 'maven_3.9.9'}/bin/mvn deploy -s $MAVEN_SETTINGS -Dmaven.repo.local=.repository -DskipTests"
-    }
-  }
-}
+            steps {
+                configFileProvider([configFile(fileId: 'Simplecustomerapp-settings', variable: 'MAVEN_SETTINGS')]) {
+                    sh "${tool 'maven_3.9.9'}/bin/mvn deploy -s $MAVEN_SETTINGS -Dmaven.repo.local=.repository -DskipTests"
+                }
+            }
+        }
 
         stage('Deploy to Tomcat') {
-          steps {
-            echo 'Deploying WAR to Tomcat...'
-            script {
-            def warFile = findFiles(glob: 'target/*.war')[0]
-            if (warFile) {
-            step([$class: 'DeployPublisher',
-            adapters: [[
-            $class: 'Tomcat9xAdapter',
-            credentialsId: 'TOM',
-            url: 'http://35.153.52.140:8082/manager/text'
-          ]],
-          war: warFile.path,
-          contextPath: 'simplecustomerapp'
-        ])
-      } else {
-        error 'WAR file not found!'
-      }
-    }
-  }
-}
+            steps {
+                echo 'Deploying WAR to Tomcat...'
+                script {
+                    def warFile = findFiles(glob: 'target/*.war')[0]
+                    if (warFile) {
+                        step([$class: 'DeployPublisher',
+                              adapters: [[
+                                  $class: 'Tomcat9xAdapter',
+                                  credentialsId: 'TOM',
+                                  url: 'http://35.153.52.140:8082/manager/text'
+                              ]],
+                              war: warFile.path,
+                              contextPath: 'simplecustomerapp'
+                        ])
+                    } else {
+                        error 'WAR file not found!'
+                    }
+                }
+            }
+        }
+    } // <--- end of stages
+
     post {
         always {
             echo 'Pipeline completed.'
@@ -115,5 +116,4 @@ pipeline {
             echo 'Pipeline failed.'
         }
     }
-}
 }
