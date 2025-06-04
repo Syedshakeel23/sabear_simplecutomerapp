@@ -46,8 +46,7 @@ pipeline {
             echo 'Performing SonarQube analysis and Quality Gate check...'
             withSonarQubeEnv(credentialsId: "${env.SONAR_QUBE_CREDENTIALS_ID}", installationName: 'SonarQube') {
             // Execute SonarQube analysis
-            sh "${tool 'maven_3.9.9'}/bin/mvn clean install sonar:sonar" +
-               "-Dsonar.projectKey=sabear_simplecutomerapp " 
+            sh "${tool 'maven_3.9.9'}/bin/mvn clean install sonar:sonar -Dsonar.projectKey=sabear_simplecutomerapp " 
             // Check Quality Gate immediately after analysis
             script { // <--- THIS 'script' BLOCK IS NECESSARY FOR THE GROOVY CODE INSIDE IT
                 def qualityGateStatus = waitForQualityGate() // Call directly
