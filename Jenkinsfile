@@ -26,7 +26,7 @@ node {
     stage('SonarQube Analysis') {
     echo 'Running SonarQube analysis...'
     withSonarQubeEnv(credentialsId: "${SONAR_QUBE_CREDENTIALS_ID}", installationName: 'SonarQube') {
-        nodejs('Node 14') {
+        withnodejs('Node 16') {
             sh """
             ${mvnHome}/bin/mvn clean install sonar:sonar \
             -Dsonar.projectKey=sabear_simplecutomerapp
