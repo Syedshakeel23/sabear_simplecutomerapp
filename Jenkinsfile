@@ -78,25 +78,28 @@ pipeline {
     }
   }
 }
-        stage('Deploy to Tomcat') {
-            steps {
-                echo 'Deploying WAR to Tomcat...'
-                script {
-                    def warFile = findFiles(glob: 'target/*.war')[0]
-                    if (warFile) {
-                        deploy adapters: [[
-                            credentialsId: "${env.TOMCAT_CREDENTIALS_ID}",
-                            contextPath: "${env.TOMCAT_APP_CONTEXT}",
-                            war: warFile.path
-                        ]], publishers: [[url: "${env.TOMCAT_URL}"]]
-                    } else {
-                        error 'WAR file not found!'
-                    }
-                }
-            }
-        }
-    }
 
+        stage('Deploy to Tomcat') {
+          steps {
+            echo 'Deploying WAR to Tomcat...'
+            script {
+            def warFile = findFiles(glob: 'target/*.war')[0]
+            if (warFile) {
+            step([$class: 'DeployPublisher',
+            adapters: [[
+            $class: 'Tomcat9xAdapter',
+            credentialsId: 'TOM',
+            url: 'http://35.153.52.140:8082/manager/text'
+          ]],
+          war: warFile.path,
+          contextPath: 'simplecustomerapp'
+        ])
+      } else {
+        error 'WAR file not found!'
+      }
+    }
+  }
+}
     post {
         always {
             echo 'Pipeline completed.'
