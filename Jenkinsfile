@@ -49,7 +49,7 @@ pipeline {
             sh "${tool 'maven_3.9.9'}/bin/mvn clean install sonar:sonar " +
                "-Dsonar.projectKey=sabear_simplecutomerapp " +
                "-Dsonar.host.url=${env.SONAR_QUBE_URL} " +
-               "-Dsonar.login=${env.SONAR_QUBE_CREDENTIALS_ID}"
+               "-Dsonar.token=${env.SONAR_QUBE_CREDENTIALS_ID}"
 
             // Check Quality Gate immediately after analysis
             script { // <--- THIS 'script' BLOCK IS NECESSARY FOR THE GROOVY CODE INSIDE IT
