@@ -40,6 +40,7 @@ pipeline {
                 echo 'Running SonarQube analysis...'
                 withSonarQubeEnv(credentialsId: "${env.SONAR_QUBE_CREDENTIALS_ID}", installationName: 'SonarQube') {
                     sh "${tool 'maven_3.9.9'}/bin/mvn clean install sonar:sonar -Dsonar.projectKey=sabear_simplecutomerapp"
+                    -Dsonar.nodejs.executable=/root/.nvm/versions/node/v14.21.3/bin/node
                 }
             }
         }
