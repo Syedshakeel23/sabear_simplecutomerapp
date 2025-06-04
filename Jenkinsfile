@@ -5,7 +5,7 @@ pipeline {
 
     environment {
         // --- SonarQube Configuration ---
-        SONAR_SCANNER_HOME = tool 'sonar-scanner' // Name of the SonarQube Scanner tool configured in Jenkins
+        SONAR_SCANNER_HOME = tool 'SonarQube' // Name of the SonarQube Scanner tool configured in Jenkins
         SONAR_QUBE_URL = "http://54.157.171.33:9002/" // Replace with your SonarQube URL
         // Use a credential for the SonarQube token
         SONAR_QUBE_CREDENTIALS_ID = 'Sonarqube1' // ID of the secret text credential in Jenkins
