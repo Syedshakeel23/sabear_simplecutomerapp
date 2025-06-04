@@ -46,7 +46,7 @@ pipeline {
             echo 'Performing SonarQube analysis and Quality Gate check...'
             withSonarQubeEnv(credentialsId: "${env.SONAR_QUBE_CREDENTIALS_ID}", installationName: 'SonarQube') {
             // Execute SonarQube analysis
-            sh "${tool 'Maven'}/bin/mvn clean install sonar:sonar " +
+            sh "${tool 'maven'}/bin/mvn clean install sonar:sonar " +
                "-Dsonar.projectKey=sabear_simplecutomerapp " +
                "-Dsonar.host.url=${env.SONAR_QUBE_URL} " +
                "-Dsonar.login=${env.SONAR_QUBE_CREDENTIALS_ID}"
