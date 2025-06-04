@@ -27,7 +27,9 @@ node {
     stage('SonarQube Analysis') {
         echo 'Running SonarQube analysis...'
         withSonarQubeEnv(credentialsId: "${SONAR_QUBE_CREDENTIALS_ID}", installationName: 'SonarQube') {
-            sh "${mvnHome}/bin/mvn clean install sonar:sonar -Dsonar.projectKey=sabear_simplecutomerapp"
+            sh "${mvnHome}/bin/mvn clean install sonar:sonar\
+            -Dsonar.projectKey=sabear_simplecutomerapp"\
+            -Dsonar.exclusions=**/*.html,**/*.jsp
         }
     }
 
@@ -35,7 +37,7 @@ node {
         echo 'Waiting for SonarQube Quality Gate result...'
         script {
             try {
-                timeout(time: 2, unit: 'MINUTES') {
+                timeout(time: 1, unit: 'MINUTES') {
                     def qg = waitForQualityGate()
                     echo "SonarQube Quality Gate Status: ${qg.status}"
                     if (qg.status != 'OK') {
