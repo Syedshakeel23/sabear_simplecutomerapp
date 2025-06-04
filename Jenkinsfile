@@ -84,14 +84,17 @@ pipeline {
                 script {
                     def warFile = findFiles(glob: 'target/*.war')[0]
                     if (warFile) {
+                        // Rename WAR to match context name
+                        sh "mv ${warFile.path} target/${env.TOMCAT_APP_CONTEXT}.war"
+
                         step([$class: 'DeployPublisher',
                               adapters: [[
                                   $class: 'Tomcat9xAdapter',
-                                  credentialsId: 'TOM',
-                                  url: 'http://35.153.52.140:8082/manager/html'
+                                  credentialsId: "${env.TOMCAT_CREDENTIALS_ID}",
+                                  url: "${env.TOMCAT_URL}"
                               ]],
-                              war: warFile.path,
-                              contextPath: 'SimpleCustomerApp-1.0.0-SNAPSHOT'
+                              war: "target/${env.TOMCAT_APP_CONTEXT}.war",
+                              contextPath: "${env.TOMCAT_APP_CONTEXT}"
                         ])
                     } else {
                         error 'WAR file not found!'
@@ -99,7 +102,7 @@ pipeline {
                 }
             }
         }
-    } // <--- end of stages
+    }
 
     post {
         always {
