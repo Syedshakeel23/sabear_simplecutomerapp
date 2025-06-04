@@ -42,23 +42,25 @@ pipeline {
         }
 
         stage('SonarQube Integration') {
-            steps {
-                echo 'Performing SonarQube analysis and Quality Gate check...'
-                withSonarQubeEnv(credentialsId: "${env.SONAR_QUBE_CREDENTIALS_ID}", installationName: 'SonarQube') {
-                    // Execute SonarQube analysis
-                    sh "${tool 'Maven'}/bin/mvn clean install sonar:sonar " +
-                       "-Dsonar.projectKey=sabear_simplecutomerapp " +
-                       "-Dsonar.host.url=${env.SONAR_QUBE_URL} " +
-                       "-Dsonar.login=${env.SONAR_QUBE_CREDENTIALS_ID}"
+    steps {
+        echo 'Performing SonarQube analysis and Quality Gate check...'
+        withSonarQubeEnv(credentialsId: "${env.SONAR_QUBE_CREDENTIALS_ID}", installationName: 'SonarQube') {
+            // Execute SonarQube analysis
+            sh "${tool 'Maven'}/bin/mvn clean install sonar:sonar " +
+               "-Dsonar.projectKey=sabear_simplecutomerapp " +
+               "-Dsonar.host.url=${env.SONAR_QUBE_URL} " +
+               "-Dsonar.login=${env.SONAR_QUBE_CREDENTIALS_ID}"
 
-                    // Check Quality Gate immediately after analysis - NO 'script' block needed here
-                    def qualityGateStatus = waitForQualityGate() // Call directly
-                    if (qualityGateStatus.status != 'OK') {
-                        error "SonarQube Quality Gate failed: ${qualityGateStatus.status}"
-                    }
+            // Check Quality Gate immediately after analysis
+            script { // <--- THIS 'script' BLOCK IS NECESSARY FOR THE GROOVY CODE INSIDE IT
+                def qualityGateStatus = waitForQualityGate() // Call directly
+                if (qualityGateStatus.status != 'OK') {
+                    error "SonarQube Quality Gate failed: ${qualityGateStatus.status}"
                 }
             }
         }
+    }
+}
 
         stage('Maven Compilation') {
             steps {
@@ -105,7 +107,6 @@ pipeline {
             slackSend(
                 channel: "${env.SLACK_CHANNEL}",
                 message: "Project: ${env.JOB_NAME}\nBuild Number: ${env.BUILD_NUMBER}\nStatus: ${currentBuild.result}\nURL: ${env.BUILD_URL}",
-                webhook: "${env.SLACK_WEBHOOK_CREDENTIAL_ID}" // <--- CORRECTED: Using the credential ID for security
             )
         }
         success {
@@ -114,7 +115,6 @@ pipeline {
                 channel: "${env.SLACK_CHANNEL}",
                 message: "SUCCESS: Project: ${env.JOB_NAME}, Build: ${env.BUILD_NUMBER}, URL: ${env.BUILD_URL}",
                 color: 'good',
-                webhook: "${env.SLACK_WEBHOOK_CREDENTIAL_ID}" // <--- CORRECTED: Using the credential ID for security
             )
         }
         failure {
@@ -123,7 +123,6 @@ pipeline {
                 channel: "${env.SLACK_CHANNEL}",
                 message: "FAILURE: Project: ${env.JOB_NAME}, Build: ${env.BUILD_NUMBER}, URL: ${env.BUILD_URL}",
                 color: 'danger',
-                webhook: "${env.SLACK_WEBHOOK_CREDENTIAL_ID}" // <--- CORRECTED: Using the credential ID for security
             )
         }
     }
