@@ -43,27 +43,26 @@ pipeline {
             }
         }
 
+        
         stage('SonarQube Integration') {
             steps {
-                echo 'Performing SonarQube analysis...'
-                withSonarQubeEnv(credentialsId: "${env.SONAR_QUBE_CREDENTIALS_ID}", installationName: 'SonarQube') { // Use the SonarQubeScanner tool name
-                    sh "${tool 'Maven'}/bin/mvn clean install sonar:sonar " +
-                       "-Dsonar.projectKey=sabear_simplecutomerapp " +
-                       "-Dsonar.host.url=${env.SONAR_QUBE_URL} " +
-                       "-Dsonar.login=${env.SONAR_QUBE_CREDENTIALS_ID}" // SonarQube Scanner for Jenkins handles the token directly
-                }
-            }
-            post {
-                always {
-                    script {
-                        def qualityGateStatus = waitForQualityGate() // Requires SonarQube Plugin >= 2.6
-                        if (qualityGateStatus.status != 'OK') {
-                            error "SonarQube Quality Gate failed: ${qualityGateStatus.status}"
-                        }
-                    }
-                }
+                echo 'Performing SonarQube analysis and Quality Gate check...'
+                withSonarQubeEnv(credentialsId: "${env.SONAR_QUBE_CREDENTIALS_ID}", installationName: 'SonarQube') {
+                // Execute SonarQube analysis
+                sh "${tool 'Maven'}/bin/mvn clean install sonar:sonar " +
+                   "-Dsonar.projectKey=sabear_simplecutomerapp " +
+                   "-Dsonar.host.url=${env.SONAR_QUBE_URL} " +
+                   "-Dsonar.login=${env.SONAR_QUBE_CREDENTIALS_ID}"
+
+                // Check Quality Gate immediately after analysis - NO 'script' block needed here
+                def qualityGateStatus = waitForQualityGate() // Call directly
+                if (qualityGateStatus.status != 'OK') {
+                    error "SonarQube Quality Gate failed: ${qualityGateStatus.status}"
             }
         }
+    }
+    // No 'post' block here for the Quality Gate check
+}
 
         stage('Maven Compilation') {
             steps {
