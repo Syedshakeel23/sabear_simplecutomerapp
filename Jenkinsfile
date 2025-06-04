@@ -7,7 +7,6 @@ pipeline {
         // --- SonarQube Configuration ---
         SONAR_SCANNER_HOME = tool 'SonarQube' // Name of the SonarQube Scanner tool configured in Jenkins
         SONAR_QUBE_URL = "http://54.157.171.33:9002/" // Replace with your SonarQube URL
-        // Use a credential for the SonarQube token
         SONAR_QUBE_CREDENTIALS_ID = 'Sonarqube1' // ID of the secret text credential in Jenkins
 
         // --- Nexus Configuration ---
@@ -16,22 +15,21 @@ pipeline {
         NEXUS_CREDENTIALS_ID = 'nexus' // ID of the username/password credential in Jenkins
 
         // --- Tomcat Deployment Configuration ---
-        TOMCAT_URL = 'http://35.153.52.140:8082/manager/text' // Tomcat Manager URL
+        TOMCAT_URL = 'http://35.153.52.140:8082/manager/text' // <--- CORRECTED: Added /text endpoint
         TOMCAT_CREDENTIALS_ID = 'TOM' // ID of the username/password credential for Tomcat manager
         TOMCAT_APP_CONTEXT = 'simplecustomerapp' // Context path for your application on Tomcat
 
         // --- Slack Notification Configuration ---
         SLACK_CHANNEL = '#devops' // Replace with your Slack channel
-        SLACK_WEBHOOK_URL = 'https://hooks.slack.com/services/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' // Replace with your Slack webhook URL
-        // It's better to store this as a secret text credential in Jenkins and reference it.
-        // For example:
-        // SLACK_WEBHOOK_URL_CREDENTIAL_ID = 'slack-webhook-secret'
+        // <--- REMOVED: SLACK_WEBHOOK_URL should NOT be here directly for security reasons.
+        // It should be stored as a Secret text credential in Jenkins.
+        SLACK_WEBHOOK_CREDENTIAL_ID = 'slack-webhook-secret' // <--- NEW: Use the ID of your Secret text credential in Jenkins
     }
 
     tools {
         // These refer to the names configured in Manage Jenkins -> Global Tool Configuration
-        jdk 'Java 17' // e.g., 'Java 11'
-        maven 'MVN_HOME' // e.g., 'Maven 3.8.6'
+        jdk 'Java 17' // e.g., 'Java 11' - Ensure this exact name is configured globally
+        maven 'MVN_HOME' // e.g., 'Maven 3.8.6' - Ensure this exact name is configured globally
     }
 
     stages {
@@ -43,26 +41,24 @@ pipeline {
             }
         }
 
-        
         stage('SonarQube Integration') {
             steps {
                 echo 'Performing SonarQube analysis and Quality Gate check...'
                 withSonarQubeEnv(credentialsId: "${env.SONAR_QUBE_CREDENTIALS_ID}", installationName: 'SonarQube') {
-                // Execute SonarQube analysis
-                sh "${tool 'Maven'}/bin/mvn clean install sonar:sonar " +
-                   "-Dsonar.projectKey=sabear_simplecutomerapp " +
-                   "-Dsonar.host.url=${env.SONAR_QUBE_URL} " +
-                   "-Dsonar.login=${env.SONAR_QUBE_CREDENTIALS_ID}"
+                    // Execute SonarQube analysis
+                    sh "${tool 'Maven'}/bin/mvn clean install sonar:sonar " +
+                       "-Dsonar.projectKey=sabear_simplecutomerapp " +
+                       "-Dsonar.host.url=${env.SONAR_QUBE_URL} " +
+                       "-Dsonar.login=${env.SONAR_QUBE_CREDENTIALS_ID}"
 
-                // Check Quality Gate immediately after analysis - NO 'script' block needed here
-                def qualityGateStatus = waitForQualityGate() // Call directly
-                if (qualityGateStatus.status != 'OK') {
-                    error "SonarQube Quality Gate failed: ${qualityGateStatus.status}"
+                    // Check Quality Gate immediately after analysis - NO 'script' block needed here
+                    def qualityGateStatus = waitForQualityGate() // Call directly
+                    if (qualityGateStatus.status != 'OK') {
+                        error "SonarQube Quality Gate failed: ${qualityGateStatus.status}"
+                    }
+                }
             }
         }
-    }
-    // No 'post' block here for the Quality Gate check
-}
 
         stage('Maven Compilation') {
             steps {
@@ -106,16 +102,29 @@ pipeline {
         always {
             echo 'Pipeline finished.'
             // Send Slack notification on pipeline completion (success or failure)
-            slackSend(channel: "${env.SLACK_CHANNEL}", message: "Project: ${env.JOB_NAME}\nBuild Number: ${env.BUILD_NUMBER}\nStatus: ${currentBuild.result}\nURL: ${env.BUILD_URL}")
+            slackSend(
+                channel: "${env.SLACK_CHANNEL}",
+                message: "Project: ${env.JOB_NAME}\nBuild Number: ${env.BUILD_NUMBER}\nStatus: ${currentBuild.result}\nURL: ${env.BUILD_URL}",
+                webhook: "${env.SLACK_WEBHOOK_CREDENTIAL_ID}" // <--- CORRECTED: Using the credential ID for security
+            )
         }
         success {
             echo 'Pipeline succeeded!'
-            // You can add more specific success notifications here if needed
+            slackSend(
+                channel: "${env.SLACK_CHANNEL}",
+                message: "SUCCESS: Project: ${env.JOB_NAME}, Build: ${env.BUILD_NUMBER}, URL: ${env.BUILD_URL}",
+                color: 'good',
+                webhook: "${env.SLACK_WEBHOOK_CREDENTIAL_ID}" // <--- CORRECTED: Using the credential ID for security
+            )
         }
         failure {
             echo 'Pipeline failed!'
-            // You can add more specific failure notifications here if needed
-            slackSend(channel: "${env.SLACK_CHANNEL}", message: "FAILURE: Project: ${env.JOB_NAME}, Build: ${env.BUILD_NUMBER}, URL: ${env.BUILD_URL}", color: 'danger')
+            slackSend(
+                channel: "${env.SLACK_CHANNEL}",
+                message: "FAILURE: Project: ${env.JOB_NAME}, Build: ${env.BUILD_NUMBER}, URL: ${env.BUILD_URL}",
+                color: 'danger',
+                webhook: "${env.SLACK_WEBHOOK_CREDENTIAL_ID}" // <--- CORRECTED: Using the credential ID for security
+            )
         }
     }
 }
