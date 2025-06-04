@@ -7,7 +7,7 @@ pipeline {
         // --- SonarQube Configuration ---
         SONAR_SCANNER_HOME = tool 'SonarQube' // Name of the SonarQube Scanner tool configured in Jenkins
         SONAR_QUBE_URL = "http://54.157.171.33:9002/" // Replace with your SonarQube URL
-        SONAR_QUBE_CREDENTIALS_ID = 'Sonarqube1' // ID of the secret text credential in Jenkins
+        SONAR_QUBE_CREDENTIALS_ID = 'sonarqube1' // ID of the secret text credential in Jenkins
 
         // --- Nexus Configuration ---
         NEXUS_REPOSITORY_ID = 'Simplecustomerapp' // Or 'your-nexus-snapshots' depending on your artifact type
