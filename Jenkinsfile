@@ -88,10 +88,10 @@ pipeline {
                               adapters: [[
                                   $class: 'Tomcat9xAdapter',
                                   credentialsId: 'TOM',
-                                  url: 'http://35.153.52.140:8082/manager/text'
+                                  url: 'http://35.153.52.140:8082/manager/html'
                               ]],
                               war: warFile.path,
-                              contextPath: 'simplecustomerapp'
+                              contextPath: 'SimpleCustomerApp-1.0.0-SNAPSHOT'
                         ])
                     } else {
                         error 'WAR file not found!'
