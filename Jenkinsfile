@@ -8,7 +8,7 @@ pipeline {
         SONAR_SCANNER_HOME = tool 'sonar-scanner' // Name of the SonarQube Scanner tool configured in Jenkins
         SONAR_QUBE_URL = "http://54.157.171.33:9002/" // Replace with your SonarQube URL
         // Use a credential for the SonarQube token
-        SONAR_QUBE_CREDENTIALS_ID = 'Sonaqube' // ID of the secret text credential in Jenkins
+        SONAR_QUBE_CREDENTIALS_ID = 'Sonarqube1' // ID of the secret text credential in Jenkins
 
         // --- Nexus Configuration ---
         NEXUS_REPOSITORY_ID = 'Simplecustomerapp' // Or 'your-nexus-snapshots' depending on your artifact type
@@ -16,7 +16,7 @@ pipeline {
         NEXUS_CREDENTIALS_ID = 'nexus' // ID of the username/password credential in Jenkins
 
         // --- Tomcat Deployment Configuration ---
-        TOMCAT_URL = 'http://35.153.52.140:8082/manager' // Tomcat Manager URL
+        TOMCAT_URL = 'http://35.153.52.140:8082/manager/text' // Tomcat Manager URL
         TOMCAT_CREDENTIALS_ID = 'TOM' // ID of the username/password credential for Tomcat manager
         TOMCAT_APP_CONTEXT = 'simplecustomerapp' // Context path for your application on Tomcat
 
