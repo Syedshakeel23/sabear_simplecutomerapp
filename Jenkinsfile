@@ -50,8 +50,8 @@ pipeline {
             // Check Quality Gate immediately after analysis
             script { // <--- THIS 'script' BLOCK IS NECESSARY FOR THE GROOVY CODE INSIDE IT
                 def qualityGateStatus = waitForQualityGate() // Call directly
-                if (qualityGateStatus.status != 'OK') {
-                    error "SonarQube Quality Gate failed: ${qualityGateStatus.status}"
+                    if (qualityGateStatus.status != 'OK') {
+                        error "SonarQube Quality Gate failed: ${qualityGateStatus.status}"
                 }
             }
         }
