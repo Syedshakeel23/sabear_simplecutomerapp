@@ -46,7 +46,7 @@ pipeline {
         stage('SonarQube Integration') {
             steps {
                 echo 'Performing SonarQube analysis...'
-                withSonarQubeEnv(credentialsId: "${env.SONAR_QUBE_CREDENTIALS_ID}", installationName: 'SonarQubeScanner') { // Use the SonarQubeScanner tool name
+                withSonarQubeEnv(credentialsId: "${env.SONAR_QUBE_CREDENTIALS_ID}", installationName: 'SonarQube') { // Use the SonarQubeScanner tool name
                     sh "${tool 'Maven'}/bin/mvn clean install sonar:sonar " +
                        "-Dsonar.projectKey=sabear_simplecutomerapp " +
                        "-Dsonar.host.url=${env.SONAR_QUBE_URL} " +
