@@ -65,7 +65,7 @@ pipeline {
         stage('Maven Compilation') {
             steps {
                 echo 'Compiling and packaging the application...'
-                sh "${tool 'Maven'}/bin/mvn clean package -DskipTests"
+                sh "${tool 'MVN_HOME'}/bin/mvn clean package -DskipTests"
             }
         }
 
