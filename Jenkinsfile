@@ -2,7 +2,6 @@ node {
     // Define tool paths
     def jdkHome = tool name: 'Java 17'
     def mvnHome = tool name: 'maven_3.9.9'
-    def sonarScannerHome = tool name: 'SonarQube'
 
     // Define environment variables
     def SONAR_QUBE_URL = "http://54.157.171.33:9002/"
@@ -27,11 +26,9 @@ node {
     stage('SonarQube Analysis') {
         echo 'Running SonarQube analysis...'
         withSonarQubeEnv(credentialsId: "${SONAR_QUBE_CREDENTIALS_ID}", installationName: 'SonarQube') {
-            withSonarQubeEnv('SonarQube') {
-                 sh "${tool 'maven_3.9.9'}/bin/mvn clean install sonar:sonar \
-                -Dsonar.projectKey=sabear_simplecutomerapp \
-                -Dsonar.nodejs.executable=/root/.nvm/versions/node/v14.21.3/bin/node"
-
+            sh "${mvnHome}/bin/mvn clean install sonar:sonar " +
+               "-Dsonar.projectKey=sabear_simplecutomerapp " +
+               "-Dsonar.nodejs.executable=/root/.nvm/versions/node/v14.21.3/bin/node"
         }
     }
 
@@ -87,7 +84,6 @@ node {
         }
     }
 
-    // Post actions
     stage('Post Actions') {
         echo 'Pipeline completed.'
         slackSend(
