@@ -56,10 +56,10 @@ pipeline {
 
             // Check Quality Gate immediately after analysis
             script {
-                // Call waitForQualityGate without the installationName parameter
-                def qualityGateStatus = waitForQualityGate()
-                if (qualityGateStatus.status != 'OK') {
-                    error "SonarQube Quality Gate failed: ${qualityGateStatus.status}"
+                def qg = waitForQualityGate()
+                echo "SonarQube Quality Gate Status: ${qg.status}"
+                if (qg.status != 'OK') {
+                    error "Pipeline aborted due to Quality Gate failure: ${qg.status}"
                 }
             }
         }
