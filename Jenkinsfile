@@ -2,6 +2,7 @@ node {
     // Define tool paths
     def jdkHome = tool name: 'Java 17'
     def mvnHome = tool name: 'maven_3.9.9'
+    def nodeHome = tool name: 'Node 16'  // Added Node 16 tool
 
     // Define environment variables
     def SONAR_QUBE_URL = "http://54.157.171.33:9002/"
@@ -26,7 +27,7 @@ node {
     stage('SonarQube Analysis') {
     echo 'Running SonarQube analysis...'
     withSonarQubeEnv(credentialsId: "${SONAR_QUBE_CREDENTIALS_ID}", installationName: 'SonarQube') {
-        withnodejs('Node 16') {
+         withEnv(["PATH+NODE=${nodeHome}/bin"]) {  // Set Node.js 16 path
             sh """
             ${mvnHome}/bin/mvn clean install sonar:sonar \
             -Dsonar.projectKey=sabear_simplecutomerapp
