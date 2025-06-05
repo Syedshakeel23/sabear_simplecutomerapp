@@ -48,6 +48,6 @@ node {
                                   path: '', 
                                   url: 'http://100.25.205.41:8082')], // Replace with your Tomcat URL
                contextPath: '/sabear',
-               war: 'target/SimpleCustomerApp-${BUILD_NUMBER}-SNAPSHOT.war'
+               war: 'target/*.war'
     }
 }
