@@ -1,11 +1,11 @@
 node {
     def mvnHome = tool 'maven_3.9.9' // Replace with your Maven installation name
-    def sonarScannerHome = tool 'SonarQube Scanner' // Replace with your SonarQube Scanner installation name
+    def sonarScannerHome = tool 'SonarQube' // Replace with your SonarQube Scanner installation name
 
     stage('Git Clone') {
         checkout([$class: 'GitSCM',
                   branches: [[name: '*/feature-1.1']],
-                  userRemoteConfigs: [[url: 'https://github.com/betawins/sabear_simplecutomerapp.git']]])
+                  userRemoteConfigs: [[url: 'https://github.com/Syedshakeel23/sabear_simplecutomerapp.git']]])
     }
 
     stage('SonarQube Analysis') {
@@ -27,7 +27,7 @@ node {
             groupId: 'com.betawins',
             version: '1.1',
             repository: 'maven-releases', // Replace with your repository name
-            credentialsId: 'nexus-credentials', // Replace with your credentials ID
+            credentialsId: 'NEXUS', // Replace with your credentials ID
             artifacts: [
                 [artifactId: 'sabear_simplecutomerapp',
                  classifier: '',
@@ -44,9 +44,9 @@ node {
     }
 
     stage('Deploy on Tomcat') {
-        deploy adapters: [tomcat8(credentialsId: 'tomcat-credentials', // Replace with your credentials ID
+        deploy adapters: [tomcat8(credentialsId: 'TOM', // Replace with your credentials ID
                                   path: '', 
-                                  url: 'http://tomcat.example.com:8080')], // Replace with your Tomcat URL
+                                  url: 'http://100.25.205.41:8082')], // Replace with your Tomcat URL
                contextPath: '/sabear',
                war: 'target/sabear_simplecutomerapp.war'
     }
