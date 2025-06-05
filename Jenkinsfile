@@ -5,7 +5,7 @@ node {
     def nodeHome = tool name: 'Node 16'  // Added Node 16 tool
 
     // Define environment variables
-    def SONAR_QUBE_URL = "http://100.25.171.168:9002//"
+    def SONAR_QUBE_URL = "http://100.25.171.168:9002/"
     def SONAR_QUBE_CREDENTIALS_ID = 'sonarqube1'
 
     def NEXUS_REPOSITORY_ID = 'Simplecustomerapp'
