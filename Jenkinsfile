@@ -44,10 +44,10 @@ node {
     }
 
     stage('Deploy on Tomcat') {
-        deploy adapters: [tomcat8(credentialsId: 'TOM', // Replace with your credentials ID
+        deploy adapters: [tomcat9(credentialsId: 'TOM', // Replace with your credentials ID
                                   path: '', 
                                   url: 'http://100.25.205.41:8082')], // Replace with your Tomcat URL
                contextPath: '/sabear',
-               war: 'target/Simplecutomerapp.war'
+               war: 'target/SimpleCustomerApp-${BUILD_NUMBER}-SNAPSHOT.war'
     }
 }
