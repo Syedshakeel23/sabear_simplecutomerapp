@@ -28,7 +28,7 @@ node {
                 sh """
                     ${mvnHome}/bin/mvn clean install sonar:sonar \
                     -Dsonar.projectKey=sabear_simplecutomerapp \
-                    -Dsonar.nodejs.executable=/root/.nvm/versions/node/v16.20.2/bin/node
+                    -Dsonar.nodejs.executable=${nodeHome}/bin/node
                 """
             }
         }
