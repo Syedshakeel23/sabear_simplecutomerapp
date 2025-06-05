@@ -29,7 +29,7 @@ node {
             repository: 'maven-releases', // Replace with your repository name
             credentialsId: 'NEXUS', // Replace with your credentials ID
             artifacts: [
-                [artifactId: 'SimpleCustomerAp',
+                [artifactId: 'SimpleCustomerApp',
                  classifier: '',
                  file: 'target/Simplecutomerapp-${BUILD_NUMBER}-SNAPSHOT.war',
                  type: 'war']
