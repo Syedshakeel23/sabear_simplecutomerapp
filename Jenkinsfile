@@ -2,20 +2,17 @@ node {
     // Define tool paths
     def jdkHome = tool name: 'Java 17'
     def mvnHome = tool name: 'maven_3.9.9'
-    def nodeHome = tool name: 'Node 16'  // Added Node 16 tool
+    def nodeHome = tool name: 'Node 16'
 
-    // Define environment variables
+    // Environment variables
     def SONAR_QUBE_URL = "http://100.25.171.168:9002/"
     def SONAR_QUBE_CREDENTIALS_ID = 'sonarqube1'
-
     def NEXUS_REPOSITORY_ID = 'Simplecustomerapp'
     def NEXUS_URL = 'http://100.25.130.61:8088/repository/Simplecustomerapp/'
     def NEXUS_CREDENTIALS_ID = 'nexus'
-
     def TOMCAT_URL = 'http://54.236.43.78:8082/manager/text'
     def TOMCAT_CREDENTIALS_ID = 'TOM'
     def TOMCAT_APP_CONTEXT = 'simplecustomerapp'
-
     def SLACK_CHANNEL = '#devops'
     def SLACK_WEBHOOK_CREDENTIAL_ID = 'slack-webhook-secret'
 
@@ -25,21 +22,17 @@ node {
     }
 
     stage('SonarQube Analysis') {
-    echo 'Running SonarQube analysis...'
-    withSonarQubeEnv(credentialsId: "${SONAR_QUBE_CREDENTIALS_ID}", installationName: 'SonarQube') {
-        sh """
-        export PATH=${nodeHome}/bin:\$PATH
-        ${mvnHome}/bin/mvn clean install sonar:sonar \
-        -Dsonar.projectKey=sabear_simplecutomerapp \
-        -Dsonar.host.url=${SONAR_QUBE_URL}
-        """
-    }
-}
-
-            """
+        echo 'Running SonarQube analysis...'
+        withSonarQubeEnv(credentialsId: "${SONAR_QUBE_CREDENTIALS_ID}", installationName: 'SonarQube') {
+            withEnv(["PATH+NODE=${nodeHome}/bin"]) {
+                sh """
+                ${mvnHome}/bin/mvn clean install sonar:sonar \
+                -Dsonar.projectKey=sabear_simplecutomerapp
+                """
+            }
         }
     }
-}
+
     stage('Wait for Quality Gate') {
         echo 'Waiting for SonarQube Quality Gate result...'
         script {
@@ -65,30 +58,32 @@ node {
     stage('Deploy to Nexus') {
         echo 'Deploying to Nexus...'
         configFileProvider([configFile(fileId: 'Simplecustomerapp-settings', variable: 'MAVEN_SETTINGS')]) {
-            sh "${mvnHome}/bin/mvn deploy -s $MAVEN_SETTINGS -Dmaven.repo.local=.repository -DskipTests"
+            sh "${mvnHome}/bin/mvn deploy -s \$MAVEN_SETTINGS -Dmaven.repo.local=.repository -DskipTests"
         }
     }
 
-   stage('Deploy to Tomcat') {
-    echo 'Deploying WAR to Tomcat...'
-    script {
-        def warFiles = findFiles(glob: 'target/*.war')
-        if (warFiles.length == 0) {
-            error 'WAR file not found!'
-        }
+    stage('Deploy to Tomcat') {
+        echo 'Deploying WAR to Tomcat...'
+        script {
+            def warFiles = findFiles(glob: 'target/*.war')
+            if (warFiles.length == 0) {
+                error 'WAR file not found!'
+            }
 
-        def warFilePath = warFiles[0].path
-        sh "mv ${warFilePath} target/${TOMCAT_APP_CONTEXT}.war"
+            def warFilePath = warFiles[0].path
+            def deployedWarPath = "target/${TOMCAT_APP_CONTEXT}.war"
 
-        withCredentials([usernamePassword(credentialsId: "${TOMCAT_CREDENTIALS_ID}", usernameVariable: 'TOMCAT_USER', passwordVariable: 'TOMCAT_PASS')]) {
-            sh '''
-                curl -v --upload-file target/'${TOMCAT_APP_CONTEXT}.war' \
-                --user $TOMCAT_USER:$TOMCAT_PASS \
+            sh "mv ${warFilePath} ${deployedWarPath}"
+
+            withCredentials([usernamePassword(credentialsId: "${TOMCAT_CREDENTIALS_ID}", usernameVariable: 'TOMCAT_USER', passwordVariable: 'TOMCAT_PASS')]) {
+                sh """
+                curl -v --upload-file ${deployedWarPath} \\
+                --user \$TOMCAT_USER:\$TOMCAT_PASS \\
                 "${TOMCAT_URL}/deploy?path=/${TOMCAT_APP_CONTEXT}&update=true"
-            '''
+                """
+            }
         }
     }
-}
 
     stage('Post Actions') {
         echo 'Pipeline completed.'
