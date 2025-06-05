@@ -9,7 +9,7 @@ node {
     }
 
     stage('SonarQube Analysis') {
-        withSonarQubeEnv('My SonarQube Server') { // Replace with your SonarQube server name
+        withSonarQubeEnv('Sonarqube') { // Replace with your SonarQube server name
             sh "${mvnHome}/bin/mvn clean verify sonar:sonar"
         }
     }
