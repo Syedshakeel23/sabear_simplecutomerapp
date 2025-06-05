@@ -70,27 +70,26 @@ node {
     }
 
     stage('Deploy to Tomcat') {
-        echo 'Deploying WAR to Tomcat...'
-        script {
-            def warFiles = findFiles(glob: 'target/*.war')
-            if (warFiles.length == 0) {
-                error 'WAR file not found!'
-            }
+    echo 'Deploying WAR to Tomcat...'
+    script {
+        def warFiles = findFiles(glob: 'target/*.war')
+        if (warFiles.length == 0) {
+            error 'WAR file not found!'
+        }
 
-            def warFilePath = warFiles[0].path
-            sh "mv ${warFilePath} target/${TOMCAT_APP_CONTEXT}.war"
+        def warFilePath = warFiles[0].path
+        sh "mv ${warFilePath} target/${TOMCAT_APP_CONTEXT}.war"
 
-            step([$class: 'DeployPublisher',
-                  adapters: [[
-                      $class: 'Tomcat9xAdapter',
-                      credentialsId: "${TOMCAT_CREDENTIALS_ID}",
-                      url: "${TOMCAT_URL}"
-                  ]]],
-                  war: "target/${TOMCAT_APP_CONTEXT}.war",
-                  contextPath: "${TOMCAT_APP_CONTEXT}"
-            ])
+        withCredentials([usernamePassword(credentialsId: "${TOMCAT_CREDENTIALS_ID}", usernameVariable: 'TOMCAT_USER', passwordVariable: 'TOMCAT_PASS')]) {
+            sh """
+                curl -v --upload-file target/${TOMCAT_APP_CONTEXT}.war \\
+                --user $TOMCAT_USER:$TOMCAT_PASS \\
+                "${TOMCAT_URL}/deploy?path=/${TOMCAT_APP_CONTEXT}&update=true"
+            """
         }
     }
+}
+
 
     stage('Post Actions') {
         echo 'Pipeline completed.'
