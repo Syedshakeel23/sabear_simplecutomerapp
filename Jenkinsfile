@@ -2,6 +2,7 @@ node {
     // Define tool paths
     def jdkHome = tool name: 'Java 17'
     def mvnHome = tool name: 'maven_3.9.9'
+    def nodeHome= tool name: 'Node_16'
     
     // Environment variables
     def SONAR_QUBE_URL = "http://100.25.171.168:9002/"
