@@ -24,14 +24,14 @@ node {
             nexusVersion: 'nexus3',
             protocol: 'http',
             nexusUrl: 'http://107.23.112.78:8081', // Replace with your Nexus URL
-            groupId: 'com.betawins',
-            version: '1.1',
+            groupId: 'com.javatpoint',
+            version: '${BUILD_NUMBER}-SNAPSHOT',
             repository: 'maven-releases', // Replace with your repository name
             credentialsId: 'NEXUS', // Replace with your credentials ID
             artifacts: [
-                [artifactId: 'sabear_simplecutomerapp',
+                [artifactId: 'SimpleCustomerAp',
                  classifier: '',
-                 file: 'target/sabear_simplecutomerapp.war',
+                 file: 'target/Simplecutomerapp.war',
                  type: 'war']
             ]
         )
@@ -48,6 +48,6 @@ node {
                                   path: '', 
                                   url: 'http://100.25.205.41:8082')], // Replace with your Tomcat URL
                contextPath: '/sabear',
-               war: 'target/sabear_simplecutomerapp.war'
+               war: 'target/Simplecutomerapp.war'
     }
 }
