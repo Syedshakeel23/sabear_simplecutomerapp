@@ -5,14 +5,14 @@ node {
     def nodeHome = tool name: 'Node 16'  // Added Node 16 tool
 
     // Define environment variables
-    def SONAR_QUBE_URL = "http://54.157.171.33:9002/"
+    def SONAR_QUBE_URL = "http://100.25.171.168:9002//"
     def SONAR_QUBE_CREDENTIALS_ID = 'sonarqube1'
 
     def NEXUS_REPOSITORY_ID = 'Simplecustomerapp'
-    def NEXUS_URL = 'http://35.175.132.66:8081/repository/Simplecustomerapp/'
+    def NEXUS_URL = 'http://100.25.130.61:8088/repository/Simplecustomerapp/'
     def NEXUS_CREDENTIALS_ID = 'nexus'
 
-    def TOMCAT_URL = 'http://35.153.52.140:8082/manager/text'
+    def TOMCAT_URL = 'http://54.236.43.78:8082/manager/text'
     def TOMCAT_CREDENTIALS_ID = 'TOM'
     def TOMCAT_APP_CONTEXT = 'simplecustomerapp'
 
