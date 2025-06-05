@@ -27,10 +27,15 @@ node {
     stage('SonarQube Analysis') {
     echo 'Running SonarQube analysis...'
     withSonarQubeEnv(credentialsId: "${SONAR_QUBE_CREDENTIALS_ID}", installationName: 'SonarQube') {
-         withEnv(["PATH+NODE=${nodeHome}/bin"]) {  // Set Node.js 16 path
-            sh """
-            ${mvnHome}/bin/mvn clean install sonar:sonar \
-            -Dsonar.projectKey=sabear_simplecutomerapp
+        sh """
+        export PATH=${nodeHome}/bin:\$PATH
+        ${mvnHome}/bin/mvn clean install sonar:sonar \
+        -Dsonar.projectKey=sabear_simplecutomerapp \
+        -Dsonar.host.url=${SONAR_QUBE_URL}
+        """
+    }
+}
+
             """
         }
     }
