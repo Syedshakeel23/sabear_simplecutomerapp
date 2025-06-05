@@ -38,7 +38,7 @@ node {
     }
 
     stage('Slack Notification') {
-        slackSend(channel: '#build-status', // Replace with your Slack channel
+        slackSend(channel: 'devops', // Replace with your Slack channel
                   color: 'good',
                   message: "Build ${env.BUILD_NUMBER} completed successfully. <${env.BUILD_URL}|Open>")
     }
