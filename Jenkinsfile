@@ -43,8 +43,9 @@ node {
                   message: "Build ${env.BUILD_NUMBER} completed successfully. <${env.BUILD_URL}|Open>")
     }
     stage('Rename WAR') {
-    steps {
-        sh 'cp target/SimpleCustomerApp-${BUILD_NUMBER}-SNAPSHOT.war target/sabear.war'
+        steps {
+            sh 'cp target/SimpleCustomerApp-${BUILD_NUMBER}-SNAPSHOT.war target/sabear.war'
+        }
     }
     stage('Deploy on Tomcat') {
         deploy adapters: [tomcat9(credentialsId: 'TOM', // Replace with your credentials ID
