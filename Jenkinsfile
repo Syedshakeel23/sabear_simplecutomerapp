@@ -23,7 +23,7 @@ node {
         nexusArtifactUploader(
             nexusVersion: 'nexus3',
             protocol: 'http',
-            nexusUrl: 'http://107.23.112.78:8081', // Replace with your Nexus URL
+            nexusUrl: '107.23.112.78:8081', // Replace with your Nexus URL
             groupId: 'com.javatpoint',
             version: '${BUILD_NUMBER}-SNAPSHOT',
             repository: 'Simplecustomerapp', // Replace with your repository name
