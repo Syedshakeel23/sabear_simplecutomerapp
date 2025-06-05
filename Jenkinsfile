@@ -90,8 +90,6 @@ node {
     }
 }
 
-
-
     stage('Post Actions') {
         echo 'Pipeline completed.'
         slackSend(
@@ -105,3 +103,5 @@ node {
         }
     }
 }
+}
+
