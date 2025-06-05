@@ -1,100 +1,53 @@
 node {
-    // Define tool paths
-    def jdkHome = tool name: 'Java 17'
-    def mvnHome = tool name: 'maven_3.9.9'
-    def nodeHome = tool name: 'Node_16'
-
-    // Environment variables
-    def SONAR_QUBE_URL = "http://100.25.171.168:9002/"
-    def SONAR_QUBE_CREDENTIALS_ID = 'sonarqube1'
-    def NEXUS_REPOSITORY_ID = 'Simplecustomerapp'
-    def NEXUS_URL = 'http://100.25.130.61:8088/repository/Simplecustomerapp/'
-    def NEXUS_CREDENTIALS_ID = 'nexus'
-    def TOMCAT_URL = 'http://54.236.43.78:8082/manager/text'
-    def TOMCAT_CREDENTIALS_ID = 'TOM'
-    def TOMCAT_APP_CONTEXT = 'simplecustomerapp'
-    def SLACK_CHANNEL = '#devops'
-    def SLACK_WEBHOOK_CREDENTIAL_ID = 'slack-webhook-secret'
+    def mvnHome = tool 'maven_3.9.9' // Replace with your Maven installation name
+    def sonarScannerHome = tool 'SonarQube Scanner' // Replace with your SonarQube Scanner installation name
 
     stage('Git Clone') {
-        echo 'Cloning repository...'
-        git branch: 'master', url: 'https://github.com/Syedshakeel23/sabear_simplecutomerapp.git'
+        checkout([$class: 'GitSCM',
+                  branches: [[name: '*/feature-1.1']],
+                  userRemoteConfigs: [[url: 'https://github.com/betawins/sabear_simplecutomerapp.git']]])
     }
 
     stage('SonarQube Analysis') {
-        echo 'Running SonarQube analysis...'
-        withSonarQubeEnv(credentialsId: "${SONAR_QUBE_CREDENTIALS_ID}", installationName: 'SonarQube') {
-            withEnv(["PATH=${nodeHome}/bin:${env.PATH}"]) {
-                sh """
-                    ${mvnHome}/bin/mvn clean install sonar:sonar \
-                    -Dsonar.projectKey=sabear_simplecutomerapp
-                """
-            }
+        withSonarQubeEnv('My SonarQube Server') { // Replace with your SonarQube server name
+            sh "${mvnHome}/bin/mvn clean verify sonar:sonar"
         }
     }
 
-    stage('Wait for Quality Gate') {
-        echo 'Waiting for SonarQube Quality Gate result...'
-        script {
-            try {
-                timeout(time: 1, unit: 'MINUTES') {
-                    def qg = waitForQualityGate()
-                    echo "SonarQube Quality Gate Status: ${qg.status}"
-                    if (qg.status != 'OK') {
-                        error "Aborting pipeline due to Quality Gate failure: ${qg.status}"
-                    }
-                }
-            } catch (e) {
-                echo "Quality Gate check failed or timed out: ${e.getMessage()}. Proceeding anyway."
-            }
-        }
+    stage('Maven Compilation') {
+        sh "${mvnHome}/bin/mvn clean package"
     }
 
-    stage('Maven Package') {
-        echo 'Packaging application...'
-        sh "${mvnHome}/bin/mvn clean package -DskipTests"
-    }
-
-    stage('Deploy to Nexus') {
-        echo 'Deploying to Nexus...'
-        configFileProvider([configFile(fileId: 'Simplecustomerapp-settings', variable: 'MAVEN_SETTINGS')]) {
-            sh "${mvnHome}/bin/mvn deploy -s \$MAVEN_SETTINGS -Dmaven.repo.local=.repository -DskipTests"
-        }
-    }
-
-    stage('Deploy to Tomcat') {
-        echo 'Deploying WAR to Tomcat...'
-        script {
-            def warFiles = findFiles(glob: 'target/*.war')
-            if (warFiles.length == 0) {
-                error 'WAR file not found!'
-            }
-
-            def warFilePath = warFiles[0].path
-            def deployedWarPath = "target/${TOMCAT_APP_CONTEXT}.war"
-
-            sh "mv ${warFilePath} ${deployedWarPath}"
-
-            withCredentials([usernamePassword(credentialsId: "${TOMCAT_CREDENTIALS_ID}", usernameVariable: 'TOMCAT_USER', passwordVariable: 'TOMCAT_PASS')]) {
-                sh """
-                    curl -v --upload-file ${deployedWarPath} \\
-                    --user \$TOMCAT_USER:\$TOMCAT_PASS \\
-                    "${TOMCAT_URL}/deploy?path=/${TOMCAT_APP_CONTEXT}&update=true"
-                """
-            }
-        }
-    }
-
-    stage('Post Actions') {
-        echo 'Pipeline completed.'
-        slackSend(
-            channel: "${SLACK_CHANNEL}",
-            message: "Build #${env.BUILD_NUMBER} for ${env.JOB_NAME} completed with status: ${currentBuild.currentResult}\n${env.BUILD_URL}"
+    stage('Nexus Artifactory') {
+        // Upload the WAR file to Nexus
+        nexusArtifactUploader(
+            nexusVersion: 'nexus3',
+            protocol: 'http',
+            nexusUrl: 'http://107.23.112.78:8081', // Replace with your Nexus URL
+            groupId: 'com.betawins',
+            version: '1.1',
+            repository: 'maven-releases', // Replace with your repository name
+            credentialsId: 'nexus-credentials', // Replace with your credentials ID
+            artifacts: [
+                [artifactId: 'sabear_simplecutomerapp',
+                 classifier: '',
+                 file: 'target/sabear_simplecutomerapp.war',
+                 type: 'war']
+            ]
         )
-        if (currentBuild.result == null || currentBuild.result == 'SUCCESS') {
-            echo 'Pipeline succeeded.'
-        } else {
-            echo 'Pipeline failed.'
-        }
+    }
+
+    stage('Slack Notification') {
+        slackSend(channel: '#build-status', // Replace with your Slack channel
+                  color: 'good',
+                  message: "Build ${env.BUILD_NUMBER} completed successfully. <${env.BUILD_URL}|Open>")
+    }
+
+    stage('Deploy on Tomcat') {
+        deploy adapters: [tomcat8(credentialsId: 'tomcat-credentials', // Replace with your credentials ID
+                                  path: '', 
+                                  url: 'http://tomcat.example.com:8080')], // Replace with your Tomcat URL
+               contextPath: '/sabear',
+               war: 'target/sabear_simplecutomerapp.war'
     }
 }
