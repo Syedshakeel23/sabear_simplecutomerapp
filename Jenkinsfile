@@ -85,7 +85,7 @@ node {
                       $class: 'Tomcat9xAdapter',
                       credentialsId: "${TOMCAT_CREDENTIALS_ID}",
                       url: "${TOMCAT_URL}"
-                  ]],
+                  ]]],
                   war: "target/${TOMCAT_APP_CONTEXT}.war",
                   contextPath: "${TOMCAT_APP_CONTEXT}"
             ])
