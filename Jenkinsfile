@@ -22,17 +22,13 @@ node {
     }
 
     stage('SonarQube Analysis') {
-    echo 'Running SonarQube analysis...'
-    withSonarQubeEnv(credentialsId: "${SONAR_QUBE_CREDENTIALS_ID}", installationName: 'SonarQube') {
-        withEnv(["PATH+NODE=${nodeHome}/bin"]) {
-            sh """
-                ${mvnHome}/bin/mvn clean install sonar:sonar \
-                -Dsonar.projectKey=sabear_simplecutomerapp \
-                -Dsonar.nodejs.executable=/root/.nvm/versions/node/v16.20.2/bin/node
-            """
-        }
-    }
-}
+        echo 'Running SonarQube analysis...'
+        withSonarQubeEnv(credentialsId: "${SONAR_QUBE_CREDENTIALS_ID}", installationName: 'SonarQube') {
+            withEnv(["PATH+NODE=${nodeHome}/bin"]) {
+                sh """
+                    ${mvnHome}/bin/mvn clean install sonar:sonar \
+                    -Dsonar.projectKey=sabear_simplecutomerapp \
+                    -Dsonar.nodejs.executable=/root/.nvm/versions/node/v16.20.2/bin/node
                 """
             }
         }
@@ -82,9 +78,9 @@ node {
 
             withCredentials([usernamePassword(credentialsId: "${TOMCAT_CREDENTIALS_ID}", usernameVariable: 'TOMCAT_USER', passwordVariable: 'TOMCAT_PASS')]) {
                 sh """
-                curl -v --upload-file ${deployedWarPath} \\
-                --user \$TOMCAT_USER:\$TOMCAT_PASS \\
-                "${TOMCAT_URL}/deploy?path=/${TOMCAT_APP_CONTEXT}&update=true"
+                    curl -v --upload-file ${deployedWarPath} \\
+                    --user \$TOMCAT_USER:\$TOMCAT_PASS \\
+                    "${TOMCAT_URL}/deploy?path=/${TOMCAT_APP_CONTEXT}&update=true"
                 """
             }
         }
