@@ -26,7 +26,7 @@ node {
             nexusUrl: 'http://107.23.112.78:8081', // Replace with your Nexus URL
             groupId: 'com.javatpoint',
             version: '${BUILD_NUMBER}-SNAPSHOT',
-            repository: 'maven-releases', // Replace with your repository name
+            repository: 'Simplecustomerapp', // Replace with your repository name
             credentialsId: 'NEXUS', // Replace with your credentials ID
             artifacts: [
                 [artifactId: 'SimpleCustomerApp',
