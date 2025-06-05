@@ -31,7 +31,7 @@ node {
             artifacts: [
                 [artifactId: 'SimpleCustomerApp',
                  classifier: '',
-                 file: 'target/Simplecutomerapp-${BUILD_NUMBER}-SNAPSHOT.war',
+                 file: 'target/SimpleCustomerApp-${BUILD_NUMBER}-SNAPSHOT.war',
                  type: 'war']
             ]
         )
