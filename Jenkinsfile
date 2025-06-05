@@ -42,12 +42,15 @@ node {
                   color: 'good',
                   message: "Build ${env.BUILD_NUMBER} completed successfully. <${env.BUILD_URL}|Open>")
     }
-
+    stage('Rename WAR') {
+    steps {
+        sh 'cp target/SimpleCustomerApp-${BUILD_NUMBER}-SNAPSHOT.war target/sabear.war'
+    }
     stage('Deploy on Tomcat') {
         deploy adapters: [tomcat9(credentialsId: 'TOM', // Replace with your credentials ID
                                   path: '', 
                                   url: 'http://100.25.205.41:8082')], // Replace with your Tomcat URL
                contextPath: '/sabear',
-               war: 'target/*.war'
+               war: 'target/sabear.war'
     }
 }
