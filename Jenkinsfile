@@ -9,7 +9,7 @@ pipeline {
 
         // Nexus
         NEXUS_REPOSITORY_ID = 'Hiring-app'
-        NEXUS_URL = "http://clever_albattani:8081/repository/Hiring-app"       
+        NEXUS_URL = "http://clever_albattani:8081/repository/Simplecustomerapp"       
         NEXUS_CREDENTIALS_ID = 'nexus'
 
         // Slack
