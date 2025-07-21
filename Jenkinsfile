@@ -4,21 +4,15 @@ pipeline {
     environment {
         // SonarQube
         SONAR_SCANNER_HOME = tool 'SonarQube'
-        SONAR_QUBE_URL = "http://54.157.171.33:9002/"
+        SONAR_QUBE_URL = "http://34.203.202.65:9000/"
         SONAR_QUBE_CREDENTIALS_ID = 'sonarqube1'
 
         // Nexus
         NEXUS_REPOSITORY_ID = 'Simplecustomerapp'
-        NEXUS_URL = 'http://35.175.132.66:8081/repository/Simplecustomerapp/'
+        NEXUS_URL = http://34.203.202.65:8081/repository/Hiring-app/
         NEXUS_CREDENTIALS_ID = 'nexus'
-
-        // Tomcat
-        TOMCAT_URL = 'http://35.153.52.140:8082/manager/text'
-        TOMCAT_CREDENTIALS_ID = 'TOM'
-        TOMCAT_APP_CONTEXT = 'simplecustomerapp'
-
         // Slack
-        SLACK_CHANNEL = '#devops'
+        SLACK_CHANNEL = '#all-devops-batch-12'
         SLACK_WEBHOOK_CREDENTIAL_ID = 'slack-webhook-secret'
     }
 
