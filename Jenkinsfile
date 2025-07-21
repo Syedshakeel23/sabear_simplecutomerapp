@@ -9,7 +9,7 @@ pipeline {
 
         // Nexus
         NEXUS_REPOSITORY_ID = 'Simplecustomerapp'
-        NEXUS_URL = http://34.203.202.65:8081/repository/Hiring-app/
+        NEXUS_URL = "http://34.203.202.65:8081/repository/Hiring-app/"
         NEXUS_CREDENTIALS_ID = 'nexus'
         // Slack
         SLACK_CHANNEL = '#all-devops-batch-12'
