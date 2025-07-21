@@ -57,7 +57,7 @@
     <distributionManagement>
     <repository>
       <id>Simplecustomerapp</id>
-      <url>http://35.175.132.66:8081/repository/Simplecustomerapp/</url>
+      <url>http://34.203.202.65:8081/repository/Simplecustomerapp/</url>
     </repository>
   </distributionManagement>
 
